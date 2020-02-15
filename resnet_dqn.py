@@ -59,7 +59,7 @@ class NatureQN(Linear):
             post_conv_1 = tf.layers.conv2d(state, filters=32, kernel_size=8, strides=4, padding='same', activation=tf.nn.relu)
             post_conv_2 = tf.layers.conv2d(post_conv_1, filters=64, kernel_size=4, strides=2, padding='same', activation=tf.nn.relu)
             post_conv_3 = tf.layers.conv2d(post_conv_2, filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
-            skip_connection = tf.layers.conv2d(state, filters = 64, kernel_size = 3, stride = 8 , padding = 'same')
+            skip_connection = tf.layers.conv2d(state, filters = 64, kernel_size = 3, strides= 8 , padding = 'same')
             post_conv_3 = post_conv_3 + skip_connection
             flat = tf.layers.flatten(post_conv_3)
             last = tf.layers.dense(flat, units=512, activation=tf.nn.relu)
