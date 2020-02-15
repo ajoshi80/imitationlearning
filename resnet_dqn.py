@@ -57,11 +57,9 @@ class NatureQN(Linear):
 
         with tf.variable_scope(scope, reuse = reuse):
             post_conv_1 = tf.layers.conv2d(state, filters=32, kernel_size=8, strides=4, padding='same', activation=tf.nn.relu)
-            post_conv_1 = post_conv_1 + state
             post_conv_2 = tf.layers.conv2d(post_conv_1, filters=64, kernel_size=4, strides=2, padding='same', activation=tf.nn.relu)
-            post_conv_2 = post_conv_2 + post_conv_1
             post_conv_3 = tf.layers.conv2d(post_conv_2, filters=64, kernel_size=3, strides=1, padding='same', activation=tf.nn.relu)
-            post_conv_3 = post_conv_3 + post_conv_2
+            post_conv_3 = post_conv_3 + state
             flat = tf.layers.flatten(post_conv_3)
             last = tf.layers.dense(flat, units=512, activation=tf.nn.relu)
             out = tf.layers.dense(last, units = num_actions)
