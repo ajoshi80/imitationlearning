@@ -3,7 +3,7 @@ from utils.preprocess import greyscale
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
 from q1_schedule import LinearExploration, LinearSchedule
-from q3_nature import NatureQN
+from resnet_dqn import NatureQN
 
 from configs.q5_train_atari_nature import config
 
