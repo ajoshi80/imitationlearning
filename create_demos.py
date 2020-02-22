@@ -17,8 +17,8 @@ from utils.preprocess import greyscale
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
 from core.deep_q_learning import DQN
-from resnet_dqn import NatureQN
-#from q3_nature import NatureQN
+from resnet_dqn import ResnetQN
+from q3_nature import NatureQN
 from configs.q5_train_atari_nature import config
 
 
@@ -54,18 +54,27 @@ env = PreproWrapper(env, prepro=greyscale, shape=(80, 80, 1),
 rewards = []
 
 experts_meta_lis = [
-    './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/.meta']
+    './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta', './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/.meta', './core/checkpoints/policy_gradients/policy_network.ckpt.meta']
 experts_chkpt_lis = [
-    './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/']
+    './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/', './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/', './core/checkpoints/policy_gradients/policy_network.ckpt']
 experts = []
 
-model = NatureQN(env, config)
-model.initialize()
-experts.append(model)
-
+#temp_sess = None
 for meta_path, chkpt_path in zip(experts_meta_lis, experts_chkpt_lis):
-    saver = tf.train.import_meta_graph(meta_path)
-    saver.restore(model.sess, chkpt_path)
+    print([n.name for n in tf.get_default_graph().as_graph_def().node])
+    if "deepdqn" in meta_path:
+        model = NatureQN(env, config)
+    if "resnet" in meta_path:
+        model = ResnetQN(env, config)
+    if "policy" in meta_path:
+        continue
+    # if temp_sess == None:
+    #temp_sess = model.sess
+    model.initialize(meta_path, chkpt_path)
+    experts.append(model)
+    # with model.graph.as_default():
+
+print("LOADED ALL MODELS")
 
 for i in range(len(experts)):
     guide = experts[i]
