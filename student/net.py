@@ -17,18 +17,21 @@ class DQN(nn.Module):
         # self.bn2 = nn.BatchNorm2d(64)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
         # self.bn3 = nn.BatchNorm2d(64)
-        self.fc4 = nn.Linear(7 * 7 * 64, 512)
+        self.fc4 = nn.Linear(6 * 6 * 64, 512)
         self.head = nn.Linear(512, n_actions)
         
     def forward(self, x):
-        x = x.permute(0,3,1,2)
-        print("AFTER PERMUTE")
-        print(x.shape)
-        print("x is ", x)
+        x = x.permute(0,3,1,2).float()
         x = F.relu(self.conv1(x))
-        print("AFTER CONV 1")
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
-        print("X",x.shape)
         x = F.relu(self.fc4(x.view(x.size(0), -1)))
         return self.head(x)
+    
+    def get_action(self, inp):
+        inp = torch.from_numpy(inp).float()
+        inp = torch.reshape(inp, (1, inp.shape[0], inp.shape[1], inp.shape[2]))
+        out = self.forward(inp).squeeze()
+        best_action = int(torch.argmax(out))
+        return best_action
+
