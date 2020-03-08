@@ -1,5 +1,7 @@
 import numpy as np
-
+import torch
+from pong_dataset import PongDataset
+"""
 demonstrations = np.load("res_demos.npz")["demos"]
 
 for example in range(demonstrations.shape[0]):
@@ -17,4 +19,14 @@ for example in range(demonstrations.shape[0]):
         label[i] = label_dict[i][2]
 
 
-    
+ """
+
+dataset = PongDataset("res_demos.npz", ".")
+
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=2,
+                                          shuffle=True)
+
+for element in dataloader:
+    print(element["image"].shape)
+    print(element["label"])
+

@@ -1,8 +1,9 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 class DQN(nn.Module):
-    def __init__(self, in_channels=4, n_actions=5):
+    def __init__(self, in_channels=4, n_actions=6):
         """
         Initialize Deep Q Network
         Args:
@@ -20,9 +21,14 @@ class DQN(nn.Module):
         self.head = nn.Linear(512, n_actions)
         
     def forward(self, x):
-        x = x.float() / 255
+        x = x.permute(0,3,1,2)
+        print("AFTER PERMUTE")
+        print(x.shape)
+        print("x is ", x)
         x = F.relu(self.conv1(x))
+        print("AFTER CONV 1")
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
+        print("X",x.shape)
         x = F.relu(self.fc4(x.view(x.size(0), -1)))
         return self.head(x)

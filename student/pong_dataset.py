@@ -1,4 +1,7 @@
 import torch
+from torch.utils.data import Dataset
+import numpy as np
+import os
 
 class PongDataset(Dataset):
     """Pong dataset."""
@@ -11,7 +14,7 @@ class PongDataset(Dataset):
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        self.demonstrations = numpy.load(npz_file)
+        self.demonstrations = np.load(os.path.join(root_dir, npz_file))["demos"]
         self.root_dir = root_dir
         self.transform = transform
 
@@ -22,25 +25,24 @@ class PongDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        img_name = os.path.join(self.root_dir,
-                                self.demonstrations[idx, 0])
-        image = io.imread(img_name)
+        img_batch = np.load(str(self.demonstrations[idx, 0]))["arr_0"]
+        dems = self.demonstrations[idx,1:]
+        label_dict = {0:(0.0, 0.0, 0.0), 1:(0.0, 0.0, 0.0), 2:(0.0, 0.0, 0.0), 3:(0.0, 0.0, 0.0), 4:(0.0, 0.0, 0.0), 5:(0.0, 0.0, 0.0)}
+        for col in range(0, len(dems), 2):
+            action = dems[col]
+            reward = dems[col + 1]
+            prev_total, prev_num, prev_avg = label_dict[int(action)]
+            label_dict[int(action)] = (prev_total + float(reward), prev_num + 1, (prev_total + float(reward))/(prev_num + 1))
 
-        img_batch = demonstrations[example, 0]["arr_0"]
-        dems = demonstrations[example,1:]
-        label_dict = {0:(0.0, 0.0, 0.0), 1:(0.0, 0.0, 0.0), 2:(0.0, 0.0, 0.0), 3:(0.0, 0.0, 0.0), 4:(0.0, 0.0, 0.0)}
-        for col in range(len(dems)):
-            if col < len(dems) - 1:
-                action = dems[col]
-                reward = dem[col + 1]
-                prev_total, prev_num, prev_avg = label_dict[action]
-                label_dict[action] = (prev_total + reward, prev_num + 1, prev_total/prev_num)
-        label = np.zeros(5)
+        label = np.ones(6) * -np.inf
+        #print("label_dict ", label_dict)
+        #print("Pre copy ", label)
         for i in range(len(label)):
-            label[i] = label_dict[i][2]
-        
-        torch.nn.softmax(label)
-
+            if label_dict[i][2] != 0:
+                label[i] = label_dict[i][2]
+        #print("After copy ", label)
+        label = torch.nn.functional.softmax(torch.from_numpy(label).float(), dim=-1)
+        #print("After softmax ", label)
         sample = {'image': img_batch, 'label': label}
 
         if self.transform:
