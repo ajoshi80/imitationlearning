@@ -53,10 +53,10 @@ env = PreproWrapper(env, prepro=greyscale, shape=(80, 80, 1),
 
 rewards = []
 
-head = 'longres'
-experts_meta_lis = ['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/longres_weights/.meta']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/.meta']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta']
+head = 'detfulldqn'
+experts_meta_lis = ['./checkpoints/pong_det/full_dqn/.meta']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/.meta']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta']
     #'./core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta', './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/.meta', './core/checkpoints/policy_gradients/policy_network.ckpt.meta']
-experts_chkpt_lis = ['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/longres_weights/']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/']
+experts_chkpt_lis = ['./checkpoints/pong_det/full_dqn/']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/']
     #'./core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/', './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/', './core/checkpoints/policy_gradients/policy_network.ckpt']
 experts = []
 
@@ -87,18 +87,18 @@ for i in range(len(experts)):
         guide_replay_buffer = ReplayBuffer(config.buffer_size, config.state_history)
         while True:
                 # store last state in buffer
+            if len(guide_experience) <= num_points:
+                guide_experience.append([])
+                env_history.append([])
             idx = guide_replay_buffer.store_frame(state)
-            q_input = guide_replay_buffer.encode_recent_observation()
+            q_input = guide_replay_buffer.encode_recent_observation() 
+            env_history[num_points].append(env.unwrapped.clone_full_state())
             action, _ = guide.get_best_action(q_input)
             # perform action in env
             new_state, reward, done, info = env.step(action)
             # store in replay memory
             guide_replay_buffer.store_effect(idx, action, reward, done)
-            if len(guide_experience) <= num_points:
-                guide_experience.append([])
-                env_history.append([])
             guide_experience[num_points].append((q_input, action, 0))
-            env_history[num_points].append(env.unwrapped.clone_full_state())
             state = new_state
             if abs(reward) == 1:
                 print("REWARD IS: " + str(reward))

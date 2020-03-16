@@ -28,12 +28,11 @@ env = PreproWrapper(env, prepro=greyscale, shape=(80, 80, 1),
 
 rewards = []
 
-experts_meta_lis = ['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/longres_weights/.meta']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta']
+experts_meta_lis = ['./checkpoints/pong_det/full_dqn/.meta']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/longres_weights/.meta']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta']
     #'./core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/.meta', './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/.meta', './core/checkpoints/policy_gradients/policy_network.ckpt.meta']
-experts_chkpt_lis = ['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/longres_weights/']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/
+experts_chkpt_lis = ['./checkpoints/pong_det/full_dqn/']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/longres_weights/']#['./checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/']#, './checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/
     #'./core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/deepdqn_weights/', './core/checkpoints/q_learning/skip_connection/q5_train_atari_nature/resnet_weights/', './core/checkpoints/policy_gradients/policy_network.ckpt']
-head = 'res'
-npz_file = './longres_demos.npz'
+npz_file = 'detfulldqn_demos.npz'
 
 states_info = np.load(npz_file)['demos']
 num_states, feats = states_info.shape
@@ -53,6 +52,7 @@ print("LOADED ALL MODELS")
 print("NUM STATES IS: " + str(num_states))
 guide = model
 for i in range(num_states):
+    print("I IS: ", i)
     guide_replay_buffer = ReplayBuffer(config.buffer_size, config.state_history)
     data = np.load(str(states_info[i,0]))
     start_state = data['arr_0']
@@ -83,9 +83,9 @@ for i in range(num_states):
         if abs(reward) == 1:
             #print("REWARD IS: " + str(reward))
             break
-    weighted_reward = reward_lis[0] * config.gamma
+    weighted_reward = reward_lis[0]
     for j in range(1, len(reward_lis)):
-        weighted_reward += (config.gamma**(j+1))*reward_lis[j]
+        weighted_reward += (config.gamma**(j))*reward_lis[j]
     print("before action {} reward {}".format(output_states_info[i, 1], output_states_info[i, 2]))
     print('after action {} reward {}'.format(init_action, weighted_reward))
     output_states_info[i, feats] = init_action
