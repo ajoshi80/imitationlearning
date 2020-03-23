@@ -1,2 +1,0 @@
-model_checkpoint_path: "policy_network.ckpt"
-all_model_checkpoint_paths: "policy_network.ckpt"
