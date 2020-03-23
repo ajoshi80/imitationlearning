@@ -1,4 +1,4 @@
-# RL with Atari
+# Self Supervised Imitation Learning with Synthetic Experts
 
 ## Install
 
